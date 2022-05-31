@@ -44,11 +44,13 @@ type Rank struct {
 	Jid         string `json:"jid"`
 	Title       string `json:"title"`
 	Shortname   string `json:"shortname"`
+	Companytype string `json:"companyType"`
+	Nature      string `json:"nature"`
 	Salary      string `json:"salary"`
 	Education   string `json:"education"`
 	Experience  string `json:"experience"`
 	Address     string `json:"address"`
-	Industry 	string `json:"industry"`
+	Industry    string `json:"industry"`
 	Scale       string `json:"scale"`
 }
 
@@ -65,12 +67,14 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 		Jid1         string
 		Title1       string
 		Salary1      string
-		Cid 		 string
+		Cid          string
+		Companytype1 string
+		Nature1      string
 		Education1   string
 		Experience1  string
 		Address1     string
 		Shortname1   string
-		Industry1	 string
+		Industry1    string
 		Scale1       string
 	)
 	var count = 0 //定义count用来计数
@@ -83,11 +87,13 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 		Education1 = value2.Education
 		Experience1 = value2.Experience
 		Address1 = value2.Address
+		Nature1 = value2.Nature
 		Cid = value2.Cid
 		for _, value3 := range company {
 			if value3.Cid == Cid {
 				Shortname1 = value3.Shortname
 				Industry1 = value3.Industry
+				Companytype1 = value3.Companytype
 				Scale1 = value3.Scale
 			}
 		}
@@ -96,15 +102,17 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 			Jid:         Jid1,
 			Title:       Title1,
 			Salary:      Salary1,
+			Companytype: Companytype1,
+			Nature:      Nature1,
 			Education:   Education1,
 			Experience:  Experience1,
 			Shortname:   Shortname1,
 			Address:     Address1,
-			Industry: 	 Industry1,
+			Industry:    Industry1,
 			Scale:       Scale1,
 		}
 		count++
-		if count <= 20 {
+		if count <= 50 {
 			rank1 = append(rank1, rank)
 		}
 		//else if count <= 21 {
