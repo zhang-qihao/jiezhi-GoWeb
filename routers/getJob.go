@@ -21,8 +21,22 @@ type JobInfo struct {
 	Address    string    `json:"address"`
 	Require    string    `json:"require"`
 	Describe   string    `json:"describe"`
-	CreatTime  time.Time `json:"createTime"`
-	ChangeTime time.Time `json:"changeTime"`
+	Creattime  time.Time `json:"createTime"`
+	Changetime time.Time `json:"changeTime"`
+}
+
+type CompanyInfo struct {
+	Cid         string    `json:"cid"`
+	Shortname   string    `json:"shortname"`
+	Fullname    string    `json:"fullName"`
+	Companytype string    `json:"companyType"`
+	Address     string    `json:"address"`
+	Industry    string    `json:"industry"`
+	Scale       string    `json:"scale"`
+	Logourl     string    `json:"logoUrl"`
+	Brief       string    `json:"brief"`
+	Creattime   time.Time `json:"createTime"`
+	Changetime  time.Time `json:"changeTime"`
 }
 
 //定义结构体用于存放职位信息
@@ -34,7 +48,7 @@ type Rank struct {
 	Education   string `json:"education"`
 	Experience  string `json:"experience"`
 	Address     string `json:"address"`
-	Companytype string `json:"companytype"`
+	Industry 	string `json:"industry"`
 	Scale       string `json:"scale"`
 }
 
@@ -44,19 +58,22 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 	rank1 := make([]Rank, 0)
 	var job []JobInfo
 	DB.Find(&job)
+	var company []CompanyInfo
+	DB.Find(&company)
 
 	var (
 		Jid1         string
 		Title1       string
 		Salary1      string
+		Cid 		 string
 		Education1   string
 		Experience1  string
 		Address1     string
 		Shortname1   string
-		CompanyType1 string
+		Industry1	 string
 		Scale1       string
-		count        = 0 //定义count用来计数
 	)
+	var count = 0 //定义count用来计数
 
 	//遍历数据库
 	for _, value2 := range job {
@@ -66,6 +83,14 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 		Education1 = value2.Education
 		Experience1 = value2.Experience
 		Address1 = value2.Address
+		Cid = value2.Cid
+		for _, value3 := range company {
+			if value3.Cid == Cid {
+				Shortname1 = value3.Shortname
+				Industry1 = value3.Industry
+				Scale1 = value3.Scale
+			}
+		}
 		//new结构体
 		var rank = Rank{
 			Jid:         Jid1,
@@ -75,7 +100,7 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 			Experience:  Experience1,
 			Shortname:   Shortname1,
 			Address:     Address1,
-			Companytype: CompanyType1,
+			Industry: 	 Industry1,
 			Scale:       Scale1,
 		}
 		count++

@@ -16,5 +16,11 @@ func SetupRouter(DB *gorm.DB) *gin.Engine {
 		log.Printf("获取所有工作")
 	})
 
+	r.POST("getJob", func(c *gin.Context) {
+		InfoTransfer(c, DB)
+		//c.String(http.StatusOK, "获取所有工作")
+		log.Printf("获取所有工作")
+	})
+
 	return r
 }
