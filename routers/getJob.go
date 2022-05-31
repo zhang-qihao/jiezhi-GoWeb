@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -54,8 +55,8 @@ type Rank struct {
 	Scale       string `json:"scale"`
 }
 
-//
-func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
+// 获取所有职业信息
+func GetJobInfoFromDatabase(DB *gorm.DB, query string) []Rank {
 	//new结构体
 	rank1 := make([]Rank, 0)
 	var job []JobInfo
@@ -111,29 +112,26 @@ func GetJobInfoFromDatabase(DB *gorm.DB) []Rank {
 			Industry:    Industry1,
 			Scale:       Scale1,
 		}
-		count++
-		if count <= 50 {
-			rank1 = append(rank1, rank)
+		if count < 50 {
+			if query == "" {
+				rank1 = append(rank1, rank)
+				count++
+			} else {
+				if strings.Index(rank.Title, query) != -1 {
+					rank1 = append(rank1, rank)
+					count++
+				}
+			}
 		}
-		//else if count <= 21 {
-		//	rank2 = append(rank2, rank)
-		//} else if count <= 24 {
-		//	rank3 = append(rank3, rank)
-		//} else {
-		//	//超过25就跳出循环
-		//	break
-		//}
 	}
 	return rank1
 }
 
 // InfoTransfer 向前端传值
-func InfoTransfer(c *gin.Context, DB *gorm.DB) {
-	//获取要放在主页的职位信息
-	rank1 := GetJobInfoFromDatabase(DB)
+func InfoTransfer(c *gin.Context, rank []Rank) {
 	//向前端传json数据：20组职位信息，用于主页面显示
 	c.JSON(http.StatusOK, gin.H{
-		"Total": len(rank1),
-		"Jobs":  rank1,
+		"Total": len(rank),
+		"Jobs":  rank,
 	})
 }
