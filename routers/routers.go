@@ -25,5 +25,13 @@ func SetupRouter(DB *gorm.DB) *gin.Engine {
 		InfoTransfer(c, rank)
 	})
 
+	r.GET("getJobDetail", func(c *gin.Context) {
+		query := c.DefaultQuery("jid", "")
+		// 获取要放在主页的职位信息
+		rank := GetJobDetailFromDatabase(DB, query)
+		// 向前端传JSON数据
+		InfoTransfer(c, rank)
+	})
+
 	return r
 }

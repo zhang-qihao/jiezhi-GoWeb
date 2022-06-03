@@ -45,6 +45,7 @@ type Rank struct {
 	Jid         string `json:"jid"`
 	Title       string `json:"title"`
 	Shortname   string `json:"shortname"`
+	Fullname    string `json:"fullname"`
 	Companytype string `json:"companyType"`
 	Nature      string `json:"nature"`
 	Salary      string `json:"salary"`
@@ -53,6 +54,9 @@ type Rank struct {
 	Address     string `json:"address"`
 	Industry    string `json:"industry"`
 	Scale       string `json:"scale"`
+	Describe    string `json:"describe"`
+	Require     string `json:"require"`
+	Brief       string `json:"brief"`
 }
 
 // 获取所有职业信息
@@ -122,6 +126,78 @@ func GetJobInfoFromDatabase(DB *gorm.DB, query string) []Rank {
 					count++
 				}
 			}
+		}
+	}
+	return rank1
+}
+
+// 获取所有职业信息
+func GetJobDetailFromDatabase(DB *gorm.DB, query string) []Rank {
+	//new结构体
+	rank1 := make([]Rank, 0)
+	var job []JobInfo
+	DB.Find(&job)
+	var company []CompanyInfo
+	DB.Find(&company)
+
+	var (
+		Jid1        string
+		Title1      string
+		Salary1     string
+		Cid         string
+		Nature1     string
+		Fullname1   string
+		Brief1      string
+		Education1  string
+		Experience1 string
+		Address1    string
+		Shortname1  string
+		Industry1   string
+		Scale1      string
+		Describe1   string
+		Require1    string
+	)
+
+	//遍历数据库
+	for _, value2 := range job {
+		Jid1 = value2.Jid
+		Title1 = value2.Title
+		Salary1 = value2.Salary
+		Education1 = value2.Education
+		Experience1 = value2.Experience
+		Address1 = value2.Address
+		Nature1 = value2.Nature
+		Cid = value2.Cid
+		Require1 = value2.Require
+		Describe1 = value2.Describe
+		for _, value3 := range company {
+			if value3.Cid == Cid {
+				Shortname1 = value3.Shortname
+				Industry1 = value3.Industry
+				Fullname1 = value3.Fullname
+				Brief1 = value3.Brief
+				Scale1 = value3.Scale
+			}
+		}
+		//new结构体
+		var rank = Rank{
+			Jid:        Jid1,
+			Title:      Title1,
+			Salary:     Salary1,
+			Nature:     Nature1,
+			Education:  Education1,
+			Experience: Experience1,
+			Shortname:  Shortname1,
+			Address:    Address1,
+			Industry:   Industry1,
+			Scale:      Scale1,
+			Describe:   Describe1,
+			Require:    Require1,
+			Fullname:   Fullname1,
+			Brief:      Brief1,
+		}
+		if strings.Index(rank.Jid, query) != -1 {
+			rank1 = append(rank1, rank)
 		}
 	}
 	return rank1
