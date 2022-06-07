@@ -2,7 +2,6 @@ package main
 
 import (
 	"MySystem/connect"
-	_ "MySystem/connect"
 	"MySystem/routers"
 	"MySystem/setting"
 	"fmt"

@@ -33,5 +33,9 @@ func SetupRouter(DB *gorm.DB) *gin.Engine {
 		InfoTransfer(c, rank)
 	})
 
+	r.GET("insertJob", func(c *gin.Context) {
+		Insert()
+	})
+
 	return r
 }
