@@ -1,7 +1,8 @@
 package main
 
 import (
-	"MySystem/connect"
+	"MySystem/dao"
+	"MySystem/models"
 	"MySystem/routers"
 	"MySystem/setting"
 	"fmt"
@@ -18,14 +19,19 @@ func main() {
 	// 创建数据库
 	// sql: CREATE DATABASE bubble;
 	// 连接数据库,在全局变量DB中
-	DB, err := connect.InitMySQL(setting.Conf.MySQLConfig)
+	err := dao.InitMySQL(setting.Conf.MySQLConfig)
 	if err != nil {
 		fmt.Printf("init mysql failed, err:%v\n", err)
 		return
 	}
+	// 数据库表与模型对应
+	dao.DB.AutoMigrate(
+		&models.JobInfos{},
+		&models.PersonPost{},
+	)
 
 	// 注册路由并执行对应的操作
-	r := routers.SetupRouter(DB)
+	r := routers.SetupRouter()
 	err = r.Run(":8080") //启动服务器 端口为8080
 	if err != nil {
 		panic(err)

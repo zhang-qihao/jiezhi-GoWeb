@@ -1,44 +1,10 @@
-package routers
+package controller
 
 import (
+	"MySystem/models"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"net/http"
-	"strings"
-	"time"
 )
-
-// JobInfo 定义职位的基础信息结构体，标号为4
-type JobInfo struct {
-	Jid        string    `json:"jid"`
-	Title      string    `json:"title"`
-	Company    string    `json:"company"`
-	Cid        string    `json:"cid"`
-	Nature     string    `json:"nature"`
-	Salary     string    `json:"salary"`
-	Education  string    `json:"education"`
-	Experience string    `json:"experience"`
-	Province   string    `json:"province"`
-	Address    string    `json:"address"`
-	Require    string    `json:"require"`
-	Describe   string    `json:"describe"`
-	Creattime  time.Time `json:"createTime"`
-	Changetime time.Time `json:"changeTime"`
-}
-
-type CompanyInfo struct {
-	Cid         string    `json:"cid"`
-	Shortname   string    `json:"shortname"`
-	Fullname    string    `json:"fullName"`
-	Companytype string    `json:"companyType"`
-	Address     string    `json:"address"`
-	Industry    string    `json:"industry"`
-	Scale       string    `json:"scale"`
-	Logourl     string    `json:"logoUrl"`
-	Brief       string    `json:"brief"`
-	Creattime   time.Time `json:"createTime"`
-	Changetime  time.Time `json:"changeTime"`
-}
 
 //定义结构体用于存放职位信息
 type Rank struct {
@@ -59,14 +25,28 @@ type Rank struct {
 	Brief       string `json:"brief"`
 }
 
-// 获取所有职业信息
-func GetJobInfoFromDatabase(DB *gorm.DB, query string) []Rank {
-	//new结构体
-	rank1 := make([]Rank, 0)
-	var job []JobInfo
-	DB.Find(&job)
-	var company []CompanyInfo
-	DB.Find(&company)
+// 获取职业信息
+func GetJob(c *gin.Context) {
+	var (
+		err     error
+		job     []models.JobInfos
+		company []models.CompanyInfo
+		rank1   []Rank
+	)
+	query := c.DefaultQuery("query", "")
+	rank1 = make([]Rank, 0)
+	if query == "" {
+		job, err = models.GetJobList()
+	} else {
+		job, err = models.QueryJobList(query)
+	}
+	if err != nil {
+		return
+	}
+	company, err = models.GetComopany()
+	if err != nil {
+		return
+	}
 
 	var (
 		Jid1         string
@@ -117,28 +97,36 @@ func GetJobInfoFromDatabase(DB *gorm.DB, query string) []Rank {
 			Scale:       Scale1,
 		}
 		if count < 50 {
-			if query == "" {
-				rank1 = append(rank1, rank)
-				count++
-			} else {
-				if strings.Index(rank.Title, query) != -1 {
-					rank1 = append(rank1, rank)
-					count++
-				}
-			}
+			rank1 = append(rank1, rank)
+			count++
 		}
 	}
-	return rank1
+
+	//向前端传json数据：职位信息、总数，用于主页面显示
+	c.JSON(http.StatusOK, gin.H{
+		"Total": len(rank1),
+		"Jobs":  rank1,
+	})
 }
 
 // 获取所有职业信息
-func GetJobDetailFromDatabase(DB *gorm.DB, query string) []Rank {
-	//new结构体
-	rank1 := make([]Rank, 0)
-	var job []JobInfo
-	DB.Find(&job)
-	var company []CompanyInfo
-	DB.Find(&company)
+func GetJobDetail(c *gin.Context) {
+	var (
+		err     error
+		job     []models.JobInfos
+		company []models.CompanyInfo
+		rank1   []Rank
+	)
+	jid := c.DefaultQuery("jid", "")
+	rank1 = make([]Rank, 0)
+	job, err = models.GetJobDetail(jid)
+	if err != nil {
+		return
+	}
+	company, err = models.GetComopany()
+	if err != nil {
+		return
+	}
 
 	var (
 		Jid1        string
@@ -196,18 +184,31 @@ func GetJobDetailFromDatabase(DB *gorm.DB, query string) []Rank {
 			Fullname:   Fullname1,
 			Brief:      Brief1,
 		}
-		if strings.Index(rank.Jid, query) != -1 {
-			rank1 = append(rank1, rank)
-		}
+		rank1 = append(rank1, rank)
 	}
-	return rank1
+
+	//向前端传json数据：职位信息、总数，用于主页面显示
+	c.JSON(http.StatusOK, gin.H{
+		"Total": len(rank1),
+		"Jobs":  rank1,
+	})
 }
 
-// InfoTransfer 向前端传值
-func InfoTransfer(c *gin.Context, rank []Rank) {
-	//向前端传json数据：20组职位信息，用于主页面显示
-	c.JSON(http.StatusOK, gin.H{
-		"Total": len(rank),
-		"Jobs":  rank,
-	})
+func PublishAJob(c *gin.Context) {
+	var job models.JobInfos
+	err := c.BindJSON(&job)
+	if err != nil {
+		return
+	}
+	if err := models.PublishAJob(&job); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 1001,
+			"msg":  "发布工作失败",
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 1000,
+			"msg":  "发布工作成功",
+		})
+	}
 }
