@@ -4,6 +4,7 @@ import (
 	"MySystem/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 //定义结构体用于存放职位信息
@@ -197,6 +198,8 @@ func GetJobDetail(c *gin.Context) {
 func PublishAJob(c *gin.Context) {
 	var job models.JobInfos
 	err := c.BindJSON(&job)
+	job.CreatTime = time.Now()
+	job.ChangeTime = time.Now()
 	if err != nil {
 		return
 	}
